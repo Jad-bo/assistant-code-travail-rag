@@ -14,3 +14,6 @@ chroma_db/
 # Divers Python
 __pycache__/
 *.pyc
+
+data/code_travail_xml/
+
