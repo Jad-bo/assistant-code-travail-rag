@@ -1,0 +1,16 @@
+# Environnement virtuel
+venv/
+
+# Données lourdes 
+data/*.tar.gz
+data/xml/
+
+# Base vectorielle
+chroma_db/
+
+# Secrets
+.env
+
+# Divers Python
+__pycache__/
+*.pyc
