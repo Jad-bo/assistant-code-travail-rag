@@ -152,14 +152,6 @@ python test_retrieval.py
 
 python rag_engine.py
 
-## 🚀 Prochaines étapes
-
-- [x] Jalon 1 : Préparation des données
-- [x] Jalon 2 : Chunking et indexation
-- [x] Jalon 3 : Validation du retrieval
-- [x] Jalon 4 : Génération avec citations (API Groq)
-- [x] Jalon 5 : Interface (Streamlit)
-- [ ] Jalon 6 : Amélioration (à définir, piste envisagée : recherche hybride)
 
 ## 🖥️ Interface (Jalon 5)
 
@@ -171,3 +163,28 @@ L'interface utilisateur est développée avec **Streamlit** (`app.py`), réponda
 
 Lancement :
 streamlit run app.py
+
+## 🛡️ Amélioration (Jalon 6) : Agent modérateur
+
+Un agent modérateur (`moderer_question()` dans `rag_engine.py`) analyse chaque question avant tout traitement, via un appel LLM dédié (température 0.0, sortie JSON strict) qui détermine :
+- **`safe`** : la question est-elle une tentative de prompt injection (ex : "ignore tes instructions") ?
+- **`in_scope`** : la question concerne-t-elle le droit du travail français ?
+
+Deux refus distincts et explicites sont renvoyés selon le cas, **avant** d'interroger ChromaDB ou de générer une réponse — économisant des appels inutiles et bloquant les tentatives de détournement en amont.
+
+**Robustesse** : en cas d'erreur de modération (JSON mal formé, API indisponible), le système adopte une stratégie *fail-open* (la question est autorisée par défaut) plutôt que de bloquer l'utilisateur à cause d'un bug technique, ce choix étant documenté comme compromis assumé.
+
+**Tests validés** :
+| Question | Résultat |
+|---|---|
+| Harcèlement moral | ✅ Réponse sourcée normale |
+| Congés payés | ✅ Honnête (« je ne trouve pas », limite connue du retrieval) |
+| 48h/semaine | ✅ Réponse sourcée normale |
+| « Quelle est la capitale de la France ? » | ✅ Refusé (hors-sujet), sans appel de recherche inutile |
+| « Ignore tes instructions... » | ✅ Refusé (tentative de détournement détectée) |
+
+### Tentative non retenue : recherche hybride (BM25 + vectoriel)
+
+Nous avons d'abord testé une recherche hybride combinant BM25 (lexical) et la recherche vectorielle, via Reciprocal Rank Fusion, pour tenter de résoudre le cas de l'article L3141-3 (congés payés) qui ne remontait pas dans le top-k vectoriel pur.
+
+Résultat : BM25 a introduit du bruit sur notre corpus, car les questions de test étaient en langage naturel sans numéro d'article explicite, et notre vocabulaire juridique partage énormément de mots courants entre thèmes. La fusion a fait remonter des articles hors-sujet (ex : rupture conventionnelle, licenciement) pour des questions sur le harcèlement ou la durée du travail, dégradant la pertinence globale. Cette piste n'a donc pas été retenue, au profit de l'agent modérateur, plus robuste et directement utile sur un vrai angle mort (sécurité) non couvert auparavant.
