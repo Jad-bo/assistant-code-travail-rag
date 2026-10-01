@@ -4,5 +4,6 @@ chromadb
 groq
 python-dotenv
 streamlit
+rank-bm25
 
 
