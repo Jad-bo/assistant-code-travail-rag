@@ -158,5 +158,16 @@ python rag_engine.py
 - [x] Jalon 2 : Chunking et indexation
 - [x] Jalon 3 : Validation du retrieval
 - [x] Jalon 4 : Génération avec citations (API Groq)
-- [ ] Jalon 5 : Interface (Streamlit)
+- [x] Jalon 5 : Interface (Streamlit)
 - [ ] Jalon 6 : Amélioration (à définir, piste envisagée : recherche hybride)
+
+## 🖥️ Interface (Jalon 5)
+
+L'interface utilisateur est développée avec **Streamlit** (`app.py`), répondant à l'exigence d'une boucle interactive de questions-réponses :
+- Saisie de la question dans un champ de texte
+- Affichage de la réponse avec citations d'articles, de l'avertissement juridique et des sources
+- Historique de conversation affiché façon chat
+- Chargement du moteur RAG mis en cache (`@st.cache_resource`) pour éviter toute réindexation ou rechargement du modèle à chaque question
+
+Lancement :
+streamlit run app.py
